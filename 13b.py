@@ -40,26 +40,52 @@ for y in range(len(track)):
                 'i': 0
             })
 
-turnRight = lambda (currentDir): (currentDir + 1) % 4
-turnLeft = lambda (currentDir): (currentDir + 3) % 4
+def cartSort(a, b):
+    if a['y'] == b['y']:
+        return a['x'] - b['x']
+    return a['y'] - b['y']
+
+crossTurnRight = lambda (dir): (dir + 1) % 4
+crossTurnLeft = lambda (dir): (dir + 3) % 4
+def upTurn(dir):
+    if dir == 0:
+        return 3
+    if dir == 1:
+        return 2
+    if dir == 2:
+        return 1
+    return 0
+
+def downTurn(dir):
+    if dir == 0:
+        return 1
+    if dir == 1:
+        return 0
+    if dir == 2:
+        return 3
+    return 2
+
 
 while True:
-    carts = sorted(carts, key=lambda cart:(cart['y'], cart['x']))
+    carts.sort(cartSort)
+    cont = True
     for cart in carts:
         nextY = cart['y'] + dirY[cart['d']]
         nextX = cart['x'] + dirX[cart['d']]
         if track[nextY][nextX] == '\\':
-            cart['d'] = {0: 3, 1:2, 2:1, 3:0}[cart['d']]
-        elif track[nextY][nextX] == '/':
-            cart['d'] = {0: 1, 1:0, 2:3, 3:2}[cart['d']]
-        elif track[nextY][nextX] == '+':
+            cart['d'] = upTurn(cart['d'])
+        if track[nextY][nextX] == '/':
+            cart['d'] = downTurn(cart['d'])
+        if track[nextY][nextX] == '+':
             if cart['i'] == 0:
-                cart['d'] = turnLeft(cart['d'])
-            elif cart['i'] == 2:
-                cart['d'] = turnRight(cart['d'])
-            cart['i'] = (cart['i'] + 1)%3
+                cart['d'] = crossTurnLeft(cart['d'])
+            if cart['i'] == 2:
+                cart['d'] = crossTurnRight(cart['d'])
+            cart['i'] = (cart['i'] + 1) % 3
+
         if (nextY,nextX) in [(other['y'], other['x']) for other in carts]:
-            carts = [other for other in carts if (other['y'], other['x']) not in [(cart['y'], cart['x']),(nextY,nextX)]]
+            carts = filter(lambda otherCart: (otherCart['x'], otherCart['y']) not in [(cart['x'], cart['y']), (nextX, nextY)] , carts)
+        
         cart['y'] = nextY
         cart['x'] = nextX
     if len(carts) == 1:
